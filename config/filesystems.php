@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk
@@ -29,7 +28,6 @@ return [
     */
 
     'disks' => [
-
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
@@ -60,6 +58,16 @@ return [
             'report' => false,
         ],
 
+        // Placeholder disk for future Azure Blob integration.
+        // Start with local driver, then switch driver/credentials once adapter is installed.
+        'azure_blob' => [
+            'driver' => env('AZURE_BLOB_DRIVER', 'local'),
+            'root' => storage_path('app/azure-blob'),
+            'url' => env('AZURE_BLOB_PUBLIC_BASE_URL'),
+            'visibility' => env('AZURE_BLOB_VISIBILITY', 'private'),
+            'throw' => false,
+            'report' => false,
+        ],
     ],
 
     /*
@@ -76,5 +84,4 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
-
 ];
