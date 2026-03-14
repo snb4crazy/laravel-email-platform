@@ -17,9 +17,10 @@ Route::get('/version', function (): JsonResponse {
     ]);
 });
 
-Route::post('/contact', [ContactSubmissionController::class, 'store']);
+Route::post('/contact', [ContactSubmissionController::class, 'store'])
+    ->middleware('draft.contact.auth');
 
 Route::prefix('webhook')->group(function (): void {
-    Route::post('/contact-form', [ContactSubmissionController::class, 'webhook']);
+    Route::post('/contact-form', [ContactSubmissionController::class, 'webhook'])
+        ->middleware('draft.webhook.signature');
 });
-
