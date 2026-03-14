@@ -2,11 +2,15 @@
 
 namespace App\Jobs;
 
+use App\Mail\ContactMail;
 use App\Models\MailMessage;
 use App\Models\MailMessageEvent;
+use App\Models\MailTemplate;
+use App\Services\Mail\MailTemplateResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class SendMailJob implements ShouldQueue
@@ -25,9 +29,11 @@ class SendMailJob implements ShouldQueue
         public readonly ?string $fileUrl = null,
         public readonly ?string $ip = null,
         public readonly ?string $userAgent = null,
+        public readonly ?int $tenantId = null,
+        public readonly ?int $siteId = null,
     ) {}
 
-    public function handle(): void
+    public function handle(MailTemplateResolver $resolver): void
     {
         // 1. Persist the message record
         $mailMessage = MailMessage::create([
@@ -42,6 +48,8 @@ class SendMailJob implements ShouldQueue
             'status'     => MailMessage::STATUS_QUEUED,
             'ip'         => $this->ip,
             'user_agent' => $this->userAgent,
+            'tenant_id'  => $this->tenantId,
+            'site_id'    => $this->siteId,
         ]);
 
         $mailMessage->recordEvent(MailMessageEvent::TYPE_QUEUED);
@@ -51,15 +59,38 @@ class SendMailJob implements ShouldQueue
             $mailMessage->update(['status' => MailMessage::STATUS_SENDING]);
             $mailMessage->recordEvent(MailMessageEvent::TYPE_SENDING);
 
-            // TODO: replace with actual mail sending, e.g.:
-            // Mail::to($this->email)->send(new ContactMail($this->name, $this->message, $this->subject));
-            Log::info('SendMailJob processing contact submission', [
+            // Map job type to template event type constant
+            $eventType = $this->type === self::TYPE_WEBHOOK
+                ? MailTemplate::EVENT_WEBHOOK_CONTACT
+                : MailTemplate::EVENT_CONTACT_FORM;
+
+            // Resolve best available template (blade fallback → global DB → tenant DB)
+            $resolved = $resolver->resolve(
+                eventType: $eventType,
+                vars: [
+                    'name'         => $this->name,
+                    'subject'      => $this->subject ?? '',
+                    'body'         => $this->message,
+                    'source'       => $this->type,
+                    'file_url'     => $this->fileUrl ?? '',
+                    'app_name'     => config('app.name'),
+                    'received_at'  => now()->toDateTimeString(),
+                    'senderName'   => $this->name,
+                    'fileUrl'      => $this->fileUrl ?? '',
+                    'receivedAt'   => now()->toDateTimeString(),
+                ],
+                tenantId: $this->tenantId,
+            );
+
+            Log::info('SendMailJob resolved template', [
                 'mail_message_id' => $mailMessage->id,
-                'type'            => $this->type,
+                'resolved_via'    => $resolved->resolvedVia,
+                'event_type'      => $eventType,
                 'to'              => $this->email,
-                'subject'         => $this->subject,
-                'file_url'        => $this->fileUrl,
             ]);
+
+            // TODO: uncomment once MAIL_MAILER is configured for real delivery
+            // Mail::to($this->email, $this->name)->send(new ContactMail($resolved));
 
             // 3. Mark as sent
             $mailMessage->update(['status' => MailMessage::STATUS_SENT]);
@@ -73,7 +104,7 @@ class SendMailJob implements ShouldQueue
                 'exception' => get_class($e),
             ]);
 
-            throw $e; // let Laravel queue handle retries
+            throw $e;
         }
     }
 }
