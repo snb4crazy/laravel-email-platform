@@ -57,3 +57,17 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## API Draft Auth Scaffold
+
+This project includes a draft-only auth scaffold for contact ingestion endpoints:
+
+- `POST /api/contact` uses `draft.contact.auth`
+- `POST /api/webhook/contact-form` uses `draft.webhook.signature`
+
+Both middleware are pass-through for now and contain TODO markers for future enforcement.
+
+Request contract drafts:
+
+- `docs/request-contracts-draft.md`
+- `docs/webhook-signature-contract.md`
