@@ -26,6 +26,7 @@ class MailMessage extends Model
 
     protected $fillable = [
         'tenant_id',
+        'site_id',
         'source',
         'from_name',
         'from_email',
@@ -55,6 +56,11 @@ class MailMessage extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tenant_id');
+    }
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class, 'site_id');
     }
 
     public function events(): HasMany
