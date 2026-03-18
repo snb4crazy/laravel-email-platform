@@ -68,6 +68,7 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 | [API.md](API.md) | API endpoints, examples, integration | Developers, Integration Partners |
 | [SETUP.md](SETUP.md) | Installation, configuration, deployment | DevOps, Developers |
 | [TESTING.md](TESTING.md) | Testing strategies, how to write tests | QA, Developers |
+| [CICD.md](CICD.md) | GitHub Actions CI/CD workflows explained | DevOps, Developers |
 | [ROADMAP.md](ROADMAP.md) | Feature roadmap, TODO items, planning | Project Managers, Developers |
 
 ### Contract Documentation
