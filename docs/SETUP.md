@@ -559,6 +559,18 @@ php artisan route:list | grep api
 # Check bootstrap/app.php routing config
 ```
 
+## Git Push & Tagging
+
+Push your branch and release tags to the remote repository:
+
+```bash
+git push origin master
+
+git push origin v1.0.0 v1.1.0
+# or push all tags at once:
+git push origin --tags
+```
+
 ## Next Steps
 
 1. **Configure Mail**: Set up actual mail driver (Postmark, Sendgrid, etc.)
@@ -569,5 +581,5 @@ php artisan route:list | grep api
 
 ---
 
-Last updated: March 17, 2026
+Last updated: March 18, 2026
 
