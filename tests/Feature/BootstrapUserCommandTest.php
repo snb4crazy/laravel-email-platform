@@ -60,7 +60,3 @@ class BootstrapUserCommandTest extends TestCase
             ]);
     }
 }
-
-
-
-

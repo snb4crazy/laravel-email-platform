@@ -68,4 +68,3 @@ class PlatformBootstrapUserCommand extends Command
         return self::SUCCESS;
     }
 }
-

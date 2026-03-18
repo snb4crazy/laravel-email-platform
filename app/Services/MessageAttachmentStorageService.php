@@ -52,4 +52,3 @@ class MessageAttachmentStorageService
         return Storage::disk($this->disk())->url($path);
     }
 }
-

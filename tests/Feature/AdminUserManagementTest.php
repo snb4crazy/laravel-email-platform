@@ -53,4 +53,3 @@ class AdminUserManagementTest extends TestCase
         ])->assertStatus(403);
     }
 }
-

@@ -36,4 +36,3 @@ class SiteCredential extends Model
         return $this->belongsTo(Site::class);
     }
 }
-

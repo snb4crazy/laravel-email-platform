@@ -10,4 +10,3 @@ enum SiteAuthMode: string
     case HMAC = 'hmac';
     case OAUTH_TOKEN = 'oauth_token';
 }
-

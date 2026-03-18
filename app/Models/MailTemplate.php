@@ -12,7 +12,8 @@ class MailTemplate extends Model
     use SoftDeletes;
 
     // Event type constants — one per email use-case
-    public const EVENT_CONTACT_FORM    = 'contact_form';
+    public const EVENT_CONTACT_FORM = 'contact_form';
+
     public const EVENT_WEBHOOK_CONTACT = 'webhook_contact';
     // TODO: expand as new email flows are added
 
@@ -29,7 +30,7 @@ class MailTemplate extends Model
 
     protected $casts = [
         'is_default' => 'boolean',
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // -------------------------------------------------------------------------
@@ -89,7 +90,7 @@ class MailTemplate extends Model
 
     private function interpolate(string $template, array $vars): string
     {
-        $search  = array_map(fn (string $key): string => '{' . $key . '}', array_keys($vars));
+        $search = array_map(fn (string $key): string => '{'.$key.'}', array_keys($vars));
         $replace = array_values($vars);
 
         return str_replace($search, $replace, $template);

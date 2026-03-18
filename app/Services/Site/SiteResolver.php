@@ -30,6 +30,7 @@ class SiteResolver
             $resolved = $this->resolveByPublicKey((string) $siteKey);
             if ($resolved !== null) {
                 $this->log($request, $resolved);
+
                 return $resolved;
             }
         }
@@ -40,6 +41,7 @@ class SiteResolver
             $resolved = $this->resolveByCredentialKeyId((string) $keyId);
             if ($resolved !== null) {
                 $this->log($request, $resolved);
+
                 return $resolved;
             }
         }
@@ -50,6 +52,7 @@ class SiteResolver
             $resolved = $this->resolveByDomain($domain);
             if ($resolved !== null) {
                 $this->log($request, $resolved);
+
                 return $resolved;
             }
         }
@@ -57,6 +60,7 @@ class SiteResolver
         // 4. Unresolved — pass-through in draft mode
         $unresolved = $this->unresolved();
         $this->log($request, $unresolved);
+
         return $unresolved;
     }
 
@@ -141,6 +145,7 @@ class SiteResolver
                 }
             }
         }
+
         return null;
     }
 
@@ -148,12 +153,11 @@ class SiteResolver
     {
         Log::debug('SiteResolver result', [
             'resolved_via' => $resolved->resolvedVia,
-            'site_id'      => $resolved->siteId,
-            'tenant_id'    => $resolved->tenantId,
-            'auth_mode'    => $resolved->authMode->value,
-            'ip'           => $request->ip(),
-            'path'         => $request->path(),
+            'site_id' => $resolved->siteId,
+            'tenant_id' => $resolved->tenantId,
+            'auth_mode' => $resolved->authMode->value,
+            'ip' => $request->ip(),
+            'path' => $request->path(),
         ]);
     }
 }
-

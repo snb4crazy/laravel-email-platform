@@ -10,4 +10,3 @@ enum CaptchaProvider: string
     case RECAPTCHA_V3 = 'recaptcha_v3';
     case HCAPTCHA = 'hcaptcha';
 }
-

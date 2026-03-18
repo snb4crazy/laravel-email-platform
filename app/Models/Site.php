@@ -49,4 +49,3 @@ class Site extends Model
         return $this->hasMany(MailMessage::class);
     }
 }
-

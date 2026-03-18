@@ -45,4 +45,3 @@ class UserController extends Controller
             ->with('status', 'User created successfully.');
     }
 }
-
