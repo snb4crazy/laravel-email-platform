@@ -79,6 +79,7 @@ jobs:
           DB_DATABASE: ":memory:"
           CACHE_STORE: array
           SESSION_DRIVER: array
+          SESSION_COOKIE: testing_session
           QUEUE_CONNECTION: sync
           MAIL_MAILER: array
 

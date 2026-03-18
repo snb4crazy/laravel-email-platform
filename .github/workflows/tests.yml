@@ -38,4 +38,14 @@ jobs:
 
       - name: Run tests
         run: php artisan test
+        env:
+          APP_ENV: testing
+          APP_URL: http://localhost
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          SESSION_COOKIE: testing_session
+          QUEUE_CONNECTION: sync
+          MAIL_MAILER: array
 
