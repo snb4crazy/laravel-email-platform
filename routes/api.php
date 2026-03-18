@@ -4,6 +4,7 @@ use App\Http\Controllers\ContactSubmissionController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
+// Test routes without middleware
 Route::get('/health', function (): JsonResponse {
     return response()->json([
         'status' => 'ok',
