@@ -251,6 +251,12 @@ git push origin v0.2.0
 
 Before staging/production workflows will work, the server needs:
 
+> Runtime application settings now live in `.env.example` as portable placeholders
+> (database, queue, session cookie, storage, mail, Azure Blob, optional S3).
+> GitHub-only deployment values like `STAGING_HOST`, `PRODUCTION_HOST`,
+> `STAGING_SSH_KEY`, and `PRODUCTION_SSH_KEY` should stay in GitHub
+> Environments / Secrets — they are not Laravel runtime env vars.
+
 ```bash
 # Minimum required on the server
 php 8.2+              # apt install php8.4-fpm / brew install php
