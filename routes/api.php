@@ -19,7 +19,7 @@ Route::get('/version', function (): JsonResponse {
 });
 
 Route::post('/contact', [ContactSubmissionController::class, 'store'])
-    ->middleware('draft.contact.auth');
+    ->middleware(['draft.contact.auth', 'throttle:30,1']); // 30 submissions / minute per IP
 
 Route::prefix('webhook')->group(function (): void {
     Route::post('/contact-form', [ContactSubmissionController::class, 'webhook'])

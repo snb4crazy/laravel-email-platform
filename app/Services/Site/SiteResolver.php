@@ -5,6 +5,7 @@ namespace App\Services\Site;
 use App\Enums\CaptchaProvider;
 use App\Enums\SiteAuthMode;
 use App\Models\Site;
+use App\Models\SiteCredential;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -60,28 +61,47 @@ class SiteResolver
     }
 
     // -------------------------------------------------------------------------
-    // Resolution strategies (all TODO — return null until DB logic is wired)
+    // Resolution strategies
     // -------------------------------------------------------------------------
 
     private function resolveByPublicKey(string $publicKey): ?ResolvedSite
     {
-        // TODO: Site::where('public_key', $publicKey)->active()->first()
-        // then return a ResolvedSite from the model.
-        return null;
+        $site = Site::query()
+            ->where('public_key', $publicKey)
+            ->where('is_active', true)
+            ->first();
+
+        return $site ? self::fromModel($site, ResolvedSite::VIA_SITE_KEY) : null;
     }
 
     private function resolveByCredentialKeyId(string $keyId): ?ResolvedSite
     {
-        // TODO: SiteCredential::where('key_id', $keyId)->active()->with('site')->first()
-        // then return a ResolvedSite from credential->site.
-        return null;
+        $credential = SiteCredential::query()
+            ->where('key_id', $keyId)
+            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->with(['site' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->first();
+
+        if (! $credential || ! $credential->site) {
+            return null;
+        }
+
+        return self::fromModel($credential->site, ResolvedSite::VIA_CREDENTIAL);
     }
 
     private function resolveByDomain(string $domain): ?ResolvedSite
     {
-        // TODO: Site::where('domain', $domain)->active()->first()
-        // then return a ResolvedSite from the model.
-        return null;
+        $site = Site::query()
+            ->where('domain', strtolower($domain))
+            ->where('is_active', true)
+            ->first();
+
+        return $site ? self::fromModel($site, ResolvedSite::VIA_DOMAIN) : null;
     }
 
     // -------------------------------------------------------------------------

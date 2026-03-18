@@ -30,6 +30,12 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 - Code examples (cURL, JavaScript, Python)
 - Rate limiting info
 
+**...run realistic demo scenarios safely**
+→ Use [DEMO_USE_CASES.md](DEMO_USE_CASES.md)
+- Seeded site keys and sample payloads
+- Contact and webhook curl examples
+- How to verify routed recipients in DB
+
 **...write tests**
 → See [TESTING.md](TESTING.md)
 - How to run tests
@@ -66,6 +72,7 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 |------|---------|----------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design, components, database | Developers |
 | [API.md](API.md) | API endpoints, examples, integration | Developers, Integration Partners |
+| [DEMO_USE_CASES.md](DEMO_USE_CASES.md) | Safe, real-world demo flows and sample requests | Developers, QA, Product Demos |
 | [SETUP.md](SETUP.md) | Installation, configuration, deployment | DevOps, Developers |
 | [TESTING.md](TESTING.md) | Testing strategies, how to write tests | QA, Developers |
 | [CICD.md](CICD.md) | GitHub Actions CI/CD workflows explained | DevOps, Developers |

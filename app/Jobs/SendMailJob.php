@@ -6,6 +6,7 @@ use App\Mail\ContactMail;
 use App\Models\MailMessage;
 use App\Models\MailMessageEvent;
 use App\Models\MailTemplate;
+use App\Models\Site;
 use App\Services\Mail\MailTemplateResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -35,11 +36,35 @@ class SendMailJob implements ShouldQueue
 
     public function handle(MailTemplateResolver $resolver): void
     {
+        // Resolve delivery address.
+        // When the submission belongs to a registered site that has a
+        // notification_email configured, ALL messages are delivered there
+        // (the site owner's inbox) regardless of what the caller supplied
+        // as `email`.  The caller's address is stored as reply_to so the
+        // owner can reply directly.  This prevents the platform from being
+        // used to send email to arbitrary addresses.
+        $fallbackEmail = (string) config('mail.from.address');
+        $fallbackName  = (string) config('mail.from.name', config('app.name'));
+
+        $deliveryEmail = $fallbackEmail;
+        $deliveryName  = $fallbackName;
+        $replyTo       = null;
+
+        if ($this->siteId) {
+            $site = Site::find($this->siteId);
+            if ($site && $site->notification_email) {
+                $deliveryEmail = $site->notification_email;
+                $deliveryName  = $site->name;
+                $replyTo       = $this->email;
+            }
+        }
+
         // 1. Persist the message record
         $mailMessage = MailMessage::create([
             'source'     => $this->type,
-            'to_name'    => $this->name,
-            'to_email'   => $this->email,
+            'to_name'    => $deliveryName,
+            'to_email'   => $deliveryEmail,
+            'reply_to'   => $replyTo,
             'from_email' => config('mail.from.address'),
             'from_name'  => config('mail.from.name'),
             'subject'    => $this->subject,
@@ -50,6 +75,10 @@ class SendMailJob implements ShouldQueue
             'user_agent' => $this->userAgent,
             'tenant_id'  => $this->tenantId,
             'site_id'    => $this->siteId,
+            'metadata'   => [
+                'submitter_name'  => $this->name,
+                'submitter_email' => $this->email,
+            ],
         ]);
 
         $mailMessage->recordEvent(MailMessageEvent::TYPE_QUEUED);
@@ -86,11 +115,12 @@ class SendMailJob implements ShouldQueue
                 'mail_message_id' => $mailMessage->id,
                 'resolved_via'    => $resolved->resolvedVia,
                 'event_type'      => $eventType,
-                'to'              => $this->email,
+                'delivery_to'     => $deliveryEmail,
+                'submitter'       => $this->email,
             ]);
 
             // TODO: uncomment once MAIL_MAILER is configured for real delivery
-            // Mail::to($this->email, $this->name)->send(new ContactMail($resolved));
+            // Mail::to($deliveryEmail, $deliveryName)->send(new ContactMail($resolved));
 
             // 3. Mark as sent
             $mailMessage->update(['status' => MailMessage::STATUS_SENT]);
