@@ -1,0 +1,240 @@
+name: Deploy – Production
+
+# ── Triggers ────────────────────────────────────────────────────────────────
+# Only triggered by a semver tag (e.g. v0.2.0) or a manual workflow_dispatch.
+# Requires a named GitHub Environment called "production" with required reviewers.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"    # v0.1.0, v1.2.3, etc.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to deploy (e.g. v0.2.0)"
+        required: true
+
+# Never run two production deploys at the same time
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+# ── Jobs ────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. Approval gate (GitHub Environment protection rule) ─────────────────
+  # Set up in: GitHub → Settings → Environments → production → Required reviewers
+  # This job does nothing except block until an approved reviewer clicks "Approve"
+  approval:
+    name: Awaiting approval
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - run: echo "Approved — proceeding to production deploy"
+
+  # ── 2. Deploy ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    needs: approval
+
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      # ── Build PHP deps ───────────────────────────────────────────────────
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP dependencies (production only)
+        run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
+      # ── Build frontend assets ────────────────────────────────────────────
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      # ── Write version file ───────────────────────────────────────────────
+      - name: Write version file
+        run: |
+          echo "{\"sha\":\"${{ github.sha }}\",\"tag\":\"${{ github.ref_name }}\",\"deployed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
+            > public/version.json
+
+      # ── Transfer files to production server ──────────────────────────────
+      # Secrets required (GitHub → Settings → Environments → production):
+      #   PRODUCTION_SSH_KEY   private key
+      #   PRODUCTION_HOST      server IP or hostname
+      #   PRODUCTION_USER      SSH username
+      #   PRODUCTION_PATH      remote deploy path
+      - name: Setup SSH key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_deploy
+          echo "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.PRODUCTION_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync files to production server
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env' \
+            --exclude='storage/logs' \
+            --exclude='storage/framework/sessions' \
+            -e "ssh -i ~/.ssh/id_deploy" \
+            ./ ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }}:${{ secrets.PRODUCTION_PATH }}/
+
+      # ── Run post-deploy commands ─────────────────────────────────────────
+      - name: Run post-deploy commands
+        run: |
+          ssh -i ~/.ssh/id_deploy \
+            ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} \
+            "cd ${{ secrets.PRODUCTION_PATH }} && \
+             php artisan down --render='errors::503' && \
+             php artisan migrate --force && \
+             php artisan config:cache && \
+             php artisan route:cache && \
+             php artisan view:cache && \
+             php artisan queue:restart && \
+             php artisan up"
+
+  # ── 3. Smoke test ─────────────────────────────────────────────────────────
+  smoke-test:
+    name: Smoke test
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Wait for server to warm up
+        run: sleep 15
+
+      - name: Health check — /api/health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ vars.PRODUCTION_URL }}/api/health")
+          echo "Health status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check FAILED with HTTP $STATUS"
+            exit 1
+          fi
+
+      - name: Content check — status=ok
+        run: |
+          BODY=$(curl -s "${{ vars.PRODUCTION_URL }}/api/health")
+          echo "Body: $BODY"
+          echo "$BODY" | grep -q '"status":"ok"' || \
+            (echo "Unexpected health response" && exit 1)
+
+      - name: Version check — /api/version
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ vars.PRODUCTION_URL }}/api/version")
+          echo "Version status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Version check FAILED with HTTP $STATUS"
+            exit 1
+          fi
+
+  # ── 4. Rollback (if smoke test fails) ────────────────────────────────────
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    needs: smoke-test
+    if: failure()   # only runs when smoke-test fails
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_deploy
+          echo "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.PRODUCTION_HOST }}" >> ~/.ssh/known_hosts
+
+      # This assumes you keep a "previous" release directory on the server.
+      # Adjust the rollback strategy to your actual deploy setup.
+      - name: Trigger rollback on server
+        run: |
+          ssh -i ~/.ssh/id_deploy \
+            ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} \
+            "cd ${{ secrets.PRODUCTION_PATH }} && \
+             php artisan down && \
+             git checkout HEAD~1 && \
+             composer install --no-dev --optimize-autoloader && \
+             php artisan migrate:rollback --force && \
+             php artisan config:cache && \
+             php artisan route:cache && \
+             php artisan view:cache && \
+             php artisan queue:restart && \
+             php artisan up"
+
+      - name: Mark rollback in summary
+        run: echo "⚠️ Production was rolled back due to failed smoke tests"
+
+  # ── 5. Create GitHub Release ─────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: smoke-test     # only create release if smoke tests pass
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: |
+            ## Release ${{ github.ref_name }}
+            
+            **Deployed:** ${{ github.event.head_commit.timestamp }}
+            **SHA:** `${{ github.sha }}`
+            **URL:** ${{ vars.PRODUCTION_URL }}
+
+            ### Changes
+            <!-- Auto-generated from git log -->
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── 6. Notify ─────────────────────────────────────────────────────────────
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [smoke-test, rollback]
+    if: always()
+
+    steps:
+      - name: Report result
+        run: |
+          if [ "${{ needs.smoke-test.result }}" == "success" ]; then
+            echo "✅ Production deploy ${{ github.ref_name }} succeeded: ${{ vars.PRODUCTION_URL }}"
+          else
+            echo "❌ Production deploy FAILED — rollback triggered"
+            exit 1
+          fi
+        # ── Optional: Slack/Discord notifications
+        # - name: Slack notification
+        #   uses: slackapi/slack-github-action@v2
+        #   with:
+        #     payload: |
+        #       {"text": "🚀 Production ${{ github.ref_name }}: ${{ needs.smoke-test.result }} — ${{ vars.PRODUCTION_URL }}"}
+        #   env:
+        #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
