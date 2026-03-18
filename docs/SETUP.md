@@ -571,6 +571,20 @@ git push origin v1.0.0 v1.1.0
 git push origin --tags
 ```
 
+## Bootstrap First User (CLI)
+
+Public signup is intentionally disabled. Create users from CLI:
+
+```bash
+php artisan platform:bootstrap-user
+```
+
+You will be prompted for:
+- full name
+- email
+- password and confirmation
+- whether the email should be marked as verified
+
 ## Next Steps
 
 1. **Configure Mail**: Set up actual mail driver (Postmark, Sendgrid, etc.)
