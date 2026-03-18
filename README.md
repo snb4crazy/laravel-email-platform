@@ -2,7 +2,7 @@
 
 > A multi-tenant Laravel 12 API backend for contact form ingestion, safe recipient routing, webhook intake, and admin-managed user provisioning.
 
-[![Tests](https://github.com/your-user/laravel-email-platform/actions/workflows/tests.yml/badge.svg)](https://github.com/your-user/laravel-email-platform/actions)
+[![Tests](https://github.com/snb4crazy/laravel-email-platform/actions/workflows/tests.yml/badge.svg)](https://github.com/snb4crazy/laravel-email-platform/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Laravel](https://img.shields.io/badge/Laravel-12-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://www.php.net)
