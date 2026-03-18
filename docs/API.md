@@ -85,6 +85,14 @@ X-Request-ID: unique_id (optional)
 - `request_id` (string, max 128) - for idempotency
 - `meta` (object) - custom metadata
 
+**Delivery Behavior:**
+- If the request resolves to a known site, delivery is locked to that site's `notification_email`.
+- The caller-provided `email` is treated as submitter context (`reply_to`) so owners can respond.
+- This prevents callers from choosing arbitrary recipient addresses.
+
+**Rate Limit:**
+- `POST /api/contact` is currently throttled at `30 requests/minute` per IP.
+
 **Response (202 Accepted):**
 ```json
 {
@@ -137,6 +145,8 @@ if (response.ok) {
   console.error('Error:', response.status);
 }
 ```
+
+For seeded demo scenarios and copy/paste requests, see [DEMO_USE_CASES.md](DEMO_USE_CASES.md).
 
 ---
 
