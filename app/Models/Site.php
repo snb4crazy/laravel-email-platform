@@ -17,6 +17,7 @@ class Site extends Model
         'tenant_id',
         'name',
         'domain',
+        'notification_email',
         'public_key',
         'auth_mode',
         'captcha_provider',
