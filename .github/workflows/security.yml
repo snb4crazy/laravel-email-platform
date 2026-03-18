@@ -1,0 +1,82 @@
+name: Security
+
+# ── Triggers ────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    - cron: "0 8 * * 1"   # Every Monday at 08:00 UTC
+  push:
+    paths:                  # Also run when lockfiles change
+      - "composer.lock"
+      - "package-lock.json"
+  workflow_dispatch:        # Allow manual trigger from the GitHub UI
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+# ── Jobs ────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. PHP dependency audit ───────────────────────────────────────────────
+  php-audit:
+    name: Composer audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies (no scripts, no dev)
+        run: composer install --no-interaction --prefer-dist --no-scripts --no-dev
+
+      - name: Run composer audit
+        # Exits non-zero if any HIGH or CRITICAL vulnerability is found.
+        # Remove --abandoned if you don't want abandoned-package warnings.
+        run: composer audit --abandoned
+
+  # ── 2. npm dependency audit ───────────────────────────────────────────────
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run npm audit (production deps only)
+        # --audit-level=high  → fail only on high/critical, ignore dev tooling noise
+        run: npm audit --omit=dev --audit-level=high
+
+  # ── 3. Secret / credential scan ───────────────────────────────────────────
+  # Gitleaks scans the full git history for accidentally committed secrets.
+  secret-scan:
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history for Gitleaks)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # must be full history
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
