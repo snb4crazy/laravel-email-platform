@@ -8,7 +8,7 @@ class ApiRoutesTest extends TestCase
 {
     public function test_health_endpoint_returns_ok_status(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->json('GET', '/api/health');
 
         $response
             ->assertOk()
@@ -19,7 +19,7 @@ class ApiRoutesTest extends TestCase
 
     public function test_version_endpoint_returns_application_metadata(): void
     {
-        $response = $this->getJson('/api/version');
+        $response = $this->json('GET', '/api/version');
 
         $response
             ->assertOk()
@@ -31,7 +31,7 @@ class ApiRoutesTest extends TestCase
 
     public function test_contact_endpoint_accepts_valid_payload(): void
     {
-        $response = $this->postJson('/api/contact', [
+        $response = $this->json('POST', '/api/contact', [
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
             'subject' => 'Partnership',
@@ -47,7 +47,7 @@ class ApiRoutesTest extends TestCase
 
     public function test_webhook_contact_form_endpoint_accepts_valid_payload(): void
     {
-        $response = $this->postJson('/api/webhook/contact-form', [
+        $response = $this->json('POST', '/api/webhook/contact-form', [
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'message' => 'Webhook test message.',
@@ -62,7 +62,7 @@ class ApiRoutesTest extends TestCase
 
     public function test_contact_endpoint_validates_required_fields(): void
     {
-        $response = $this->postJson('/api/contact', []);
+        $response = $this->json('POST', '/api/contact', []);
 
         $response
             ->assertStatus(422)
