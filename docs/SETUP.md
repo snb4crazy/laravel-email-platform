@@ -441,6 +441,56 @@ docker-compose up -d
 docker-compose exec app php artisan migrate
 ```
 
+## Azure VM Deployment (Portable Profile)
+
+For Azure VM testing (and reusable settings for other clouds), use the
+dedicated template file: `.env.azure.example`.
+
+### 1) Prepare environment on the VM
+
+```bash
+cd /var/www/email_platform
+cp .env.azure.example .env
+php artisan key:generate
+```
+
+### 2) Fill production values in `.env`
+
+Required to set:
+- `APP_URL` (your HTTPS API URL)
+- `DB_*` (Azure Database for MySQL/PostgreSQL or your DB host)
+- `REDIS_*` (Azure Cache for Redis, if enabled)
+- `MAIL_*` (SMTP/provider credentials)
+
+Optional depending on feature usage:
+- `AZURE_BLOB_*` (if attachment storage is enabled)
+- `AWS_*` (if using S3-compatible storage instead)
+
+### 3) Run first-time deployment commands
+
+```bash
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan queue:restart
+```
+
+### 4) Verify app health
+
+```bash
+curl -s https://your-api-domain/api/health
+curl -s https://your-api-domain/api/version
+```
+
+### Notes
+
+- CI/CD host and SSH values (`STAGING_*`, `PRODUCTION_*`, `*_SSH_KEY`) stay in
+  GitHub Environments/Secrets, not in app `.env` files.
+- Keep `.env.azure.example` as a template only (no real secrets in git).
+- The profile is Azure-friendly but portable to other clouds by changing
+  `DB_*`, `REDIS_*`, `MAIL_*`, and storage settings.
+
 ## Health Checks
 
 ### Verify Installation
