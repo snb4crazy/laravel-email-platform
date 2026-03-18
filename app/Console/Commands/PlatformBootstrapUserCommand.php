@@ -51,15 +51,17 @@ class PlatformBootstrapUserCommand extends Command
         $user = User::query()->create([
             'name' => $name,
             'email' => $email,
+            'role' => User::ROLE_ADMIN,
             'password' => Hash::make($password),
             'email_verified_at' => $markVerified ? now() : null,
         ]);
 
         $this->components->info('User created successfully.');
-        $this->table(['id', 'name', 'email', 'email_verified_at'], [[
+        $this->table(['id', 'name', 'email', 'role', 'email_verified_at'], [[
             $user->id,
             $user->name,
             $user->email,
+            $user->role,
             $user->email_verified_at,
         ]]);
 

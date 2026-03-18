@@ -585,6 +585,25 @@ You will be prompted for:
 - password and confirmation
 - whether the email should be marked as verified
 
+The bootstrap command creates this first account with the `admin` role.
+
+## RBAC and User Management
+
+- Roles are currently: `admin`, `user`
+- Public `/register` is blocked (HTTP 403)
+- Admin users can create users from the admin panel
+
+Login and admin routes:
+
+```bash
+GET  /login
+POST /login
+POST /logout
+GET  /admin/users
+GET  /admin/users/create
+POST /admin/users
+```
+
 ## Next Steps
 
 1. **Configure Mail**: Set up actual mail driver (Postmark, Sendgrid, etc.)

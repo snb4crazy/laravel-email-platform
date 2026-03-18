@@ -21,6 +21,7 @@ class BootstrapUserCommandTest extends TestCase
         $user = User::query()->where('email', 'owner@example.com')->first();
 
         $this->assertNotNull($user);
+        $this->assertSame(User::ROLE_ADMIN, $user->role);
         $this->assertTrue(Hash::check('super-secret-123', $user->password));
     }
 
