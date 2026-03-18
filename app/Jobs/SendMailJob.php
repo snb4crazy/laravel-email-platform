@@ -18,7 +18,8 @@ class SendMailJob implements ShouldQueue
 {
     use Queueable;
 
-    public const TYPE_WEB     = 'web';
+    public const TYPE_WEB = 'web';
+
     public const TYPE_WEBHOOK = 'webhook';
 
     public function __construct(
@@ -44,39 +45,39 @@ class SendMailJob implements ShouldQueue
         // owner can reply directly.  This prevents the platform from being
         // used to send email to arbitrary addresses.
         $fallbackEmail = (string) config('mail.from.address');
-        $fallbackName  = (string) config('mail.from.name', config('app.name'));
+        $fallbackName = (string) config('mail.from.name', config('app.name'));
 
         $deliveryEmail = $fallbackEmail;
-        $deliveryName  = $fallbackName;
-        $replyTo       = null;
+        $deliveryName = $fallbackName;
+        $replyTo = null;
 
         if ($this->siteId) {
             $site = Site::find($this->siteId);
             if ($site && $site->notification_email) {
                 $deliveryEmail = $site->notification_email;
-                $deliveryName  = $site->name;
-                $replyTo       = $this->email;
+                $deliveryName = $site->name;
+                $replyTo = $this->email;
             }
         }
 
         // 1. Persist the message record
         $mailMessage = MailMessage::create([
-            'source'     => $this->type,
-            'to_name'    => $deliveryName,
-            'to_email'   => $deliveryEmail,
-            'reply_to'   => $replyTo,
+            'source' => $this->type,
+            'to_name' => $deliveryName,
+            'to_email' => $deliveryEmail,
+            'reply_to' => $replyTo,
             'from_email' => config('mail.from.address'),
-            'from_name'  => config('mail.from.name'),
-            'subject'    => $this->subject,
-            'body_text'  => $this->message,
-            'file_url'   => $this->fileUrl,
-            'status'     => MailMessage::STATUS_QUEUED,
-            'ip'         => $this->ip,
+            'from_name' => config('mail.from.name'),
+            'subject' => $this->subject,
+            'body_text' => $this->message,
+            'file_url' => $this->fileUrl,
+            'status' => MailMessage::STATUS_QUEUED,
+            'ip' => $this->ip,
             'user_agent' => $this->userAgent,
-            'tenant_id'  => $this->tenantId,
-            'site_id'    => $this->siteId,
-            'metadata'   => [
-                'submitter_name'  => $this->name,
+            'tenant_id' => $this->tenantId,
+            'site_id' => $this->siteId,
+            'metadata' => [
+                'submitter_name' => $this->name,
                 'submitter_email' => $this->email,
             ],
         ]);
@@ -97,26 +98,26 @@ class SendMailJob implements ShouldQueue
             $resolved = $resolver->resolve(
                 eventType: $eventType,
                 vars: [
-                    'name'         => $this->name,
-                    'subject'      => $this->subject ?? '',
-                    'body'         => $this->message,
-                    'source'       => $this->type,
-                    'file_url'     => $this->fileUrl ?? '',
-                    'app_name'     => config('app.name'),
-                    'received_at'  => now()->toDateTimeString(),
-                    'senderName'   => $this->name,
-                    'fileUrl'      => $this->fileUrl ?? '',
-                    'receivedAt'   => now()->toDateTimeString(),
+                    'name' => $this->name,
+                    'subject' => $this->subject ?? '',
+                    'body' => $this->message,
+                    'source' => $this->type,
+                    'file_url' => $this->fileUrl ?? '',
+                    'app_name' => config('app.name'),
+                    'received_at' => now()->toDateTimeString(),
+                    'senderName' => $this->name,
+                    'fileUrl' => $this->fileUrl ?? '',
+                    'receivedAt' => now()->toDateTimeString(),
                 ],
                 tenantId: $this->tenantId,
             );
 
             Log::info('SendMailJob resolved template', [
                 'mail_message_id' => $mailMessage->id,
-                'resolved_via'    => $resolved->resolvedVia,
-                'event_type'      => $eventType,
-                'delivery_to'     => $deliveryEmail,
-                'submitter'       => $this->email,
+                'resolved_via' => $resolved->resolvedVia,
+                'event_type' => $eventType,
+                'delivery_to' => $deliveryEmail,
+                'submitter' => $this->email,
             ]);
 
             // TODO: uncomment once MAIL_MAILER is configured for real delivery
@@ -130,7 +131,7 @@ class SendMailJob implements ShouldQueue
             // 4. Record failure
             $mailMessage->update(['status' => MailMessage::STATUS_FAILED]);
             $mailMessage->recordEvent(MailMessageEvent::TYPE_FAILED, [
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
                 'exception' => get_class($e),
             ]);
 

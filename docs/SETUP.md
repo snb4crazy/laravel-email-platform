@@ -571,6 +571,39 @@ git push origin v1.0.0 v1.1.0
 git push origin --tags
 ```
 
+## Bootstrap First User (CLI)
+
+Public signup is intentionally disabled. Create users from CLI:
+
+```bash
+php artisan platform:bootstrap-user
+```
+
+You will be prompted for:
+- full name
+- email
+- password and confirmation
+- whether the email should be marked as verified
+
+The bootstrap command creates this first account with the `admin` role.
+
+## RBAC and User Management
+
+- Roles are currently: `admin`, `user`
+- Public `/register` is blocked (HTTP 403)
+- Admin users can create users from the admin panel
+
+Login and admin routes:
+
+```bash
+GET  /login
+POST /login
+POST /logout
+GET  /admin/users
+GET  /admin/users/create
+POST /admin/users
+```
+
 ## Next Steps
 
 1. **Configure Mail**: Set up actual mail driver (Postmark, Sendgrid, etc.)

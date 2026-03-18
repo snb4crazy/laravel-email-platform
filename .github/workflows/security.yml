@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -38,8 +38,8 @@ jobs:
 
       - name: Run composer audit
         # Exits non-zero if any HIGH or CRITICAL vulnerability is found.
-        # Remove --abandoned if you don't want abandoned-package warnings.
-        run: composer audit --abandoned
+        # --abandoned now requires a mode value (report|ignore|fail).
+        run: composer audit --abandoned=fail
 
   # ── 2. npm dependency audit ───────────────────────────────────────────────
   npm-audit:
@@ -48,12 +48,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install npm dependencies
@@ -71,7 +71,7 @@ jobs:
 
     steps:
       - name: Checkout (full history for Gitleaks)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0      # must be full history
 

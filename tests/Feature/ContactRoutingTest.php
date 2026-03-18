@@ -74,5 +74,3 @@ class ContactRoutingTest extends TestCase
         ]);
     }
 }
-
-

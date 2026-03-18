@@ -12,16 +12,23 @@ class MailMessage extends Model
     use SoftDeletes;
 
     // Source constants — match SendMailJob::TYPE_*
-    public const SOURCE_WEB     = 'web';
+    public const SOURCE_WEB = 'web';
+
     public const SOURCE_WEBHOOK = 'webhook';
 
     // Status lifecycle constants
-    public const STATUS_RECEIVED  = 'received';
-    public const STATUS_QUEUED    = 'queued';
-    public const STATUS_SENDING   = 'sending';
-    public const STATUS_SENT      = 'sent';
+    public const STATUS_RECEIVED = 'received';
+
+    public const STATUS_QUEUED = 'queued';
+
+    public const STATUS_SENDING = 'sending';
+
+    public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
-    public const STATUS_FAILED    = 'failed';
+
+    public const STATUS_FAILED = 'failed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -48,9 +55,9 @@ class MailMessage extends Model
     ];
 
     protected $casts = [
-        'is_spam'          => 'boolean',
+        'is_spam' => 'boolean',
         'spam_reported_at' => 'datetime',
-        'metadata'         => 'array',
+        'metadata' => 'array',
     ];
 
     public function tenant(): BelongsTo
@@ -72,8 +79,8 @@ class MailMessage extends Model
     {
         /** @var MailMessageEvent */
         return $this->events()->create([
-            'type'        => $type,
-            'payload'     => $payload ?: null,
+            'type' => $type,
+            'payload' => $payload ?: null,
             'occurred_at' => now(),
         ]);
     }

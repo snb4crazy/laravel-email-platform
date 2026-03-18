@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
 
@@ -58,9 +58,9 @@ jobs:
 
       # ── Build frontend assets ────────────────────────────────────────────
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install npm dependencies
@@ -83,8 +83,12 @@ jobs:
       #   PRODUCTION_PATH      remote deploy path
       - name: Setup SSH key
         run: |
+          if [ -z "${{ secrets.PRODUCTION_SSH_KEY }}" ] || [ -z "${{ secrets.PRODUCTION_HOST }}" ] || [ -z "${{ secrets.PRODUCTION_USER }}" ] || [ -z "${{ secrets.PRODUCTION_PATH }}" ]; then
+            echo "Missing required production deploy secrets (PRODUCTION_SSH_KEY / PRODUCTION_HOST / PRODUCTION_USER / PRODUCTION_PATH)."
+            exit 1
+          fi
           install -m 600 -D /dev/null ~/.ssh/id_deploy
-          echo "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
+          printf '%s' "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
           ssh-keyscan -H "${{ secrets.PRODUCTION_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Sync files to production server
@@ -155,14 +159,14 @@ jobs:
   rollback:
     name: Rollback
     runs-on: ubuntu-latest
-    needs: smoke-test
-    if: failure()   # only runs when smoke-test fails
+    needs: [deploy, smoke-test]
+    if: needs.deploy.result == 'success' && needs.smoke-test.result == 'failure'
 
     steps:
       - name: Setup SSH key
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_deploy
-          echo "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
+          printf '%s' "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_deploy
           ssh-keyscan -H "${{ secrets.PRODUCTION_HOST }}" >> ~/.ssh/known_hosts
 
       # This assumes you keep a "previous" release directory on the server.
@@ -193,7 +197,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -217,7 +221,7 @@ jobs:
   notify:
     name: Notify
     runs-on: ubuntu-latest
-    needs: [smoke-test, rollback]
+    needs: [deploy, smoke-test, rollback]
     if: always()
 
     steps:
@@ -225,8 +229,10 @@ jobs:
         run: |
           if [ "${{ needs.smoke-test.result }}" == "success" ]; then
             echo "✅ Production deploy ${{ github.ref_name }} succeeded: ${{ vars.PRODUCTION_URL }}"
+          elif [ "${{ needs.deploy.result }}" == "failure" ]; then
+            echo "❌ Production deploy failed before smoke tests (likely configuration or secret issue)."
           else
-            echo "❌ Production deploy FAILED — rollback triggered"
+            echo "❌ Production deploy failed and rollback was attempted."
             exit 1
           fi
         # ── Optional: Slack/Discord notifications

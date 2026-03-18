@@ -88,4 +88,3 @@ class DemoUseCasesSeeder extends Seeder
         $this->command?->info('Demo use cases seeded.');
     }
 }
-

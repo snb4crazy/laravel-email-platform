@@ -34,4 +34,3 @@ class WebhookContactRequest extends FormRequest
         ];
     }
 }
-

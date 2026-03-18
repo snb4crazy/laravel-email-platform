@@ -8,4 +8,3 @@ enum CredentialType: string
     case HMAC = 'hmac';
     case OAUTH_TOKEN = 'oauth_token';
 }
-

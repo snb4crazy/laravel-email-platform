@@ -15,4 +15,3 @@ final class ResolvedMailTemplate
         public readonly string $resolvedVia, // 'db_tenant' | 'db_global' | 'blade'
     ) {}
 }
-

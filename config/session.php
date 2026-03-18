@@ -127,10 +127,9 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
-    ),
+    // Some environments define SESSION_COOKIE as an empty string; guard against
+    // that so Symfony Cookie never receives an empty cookie name.
+    'cookie' => env('SESSION_COOKIE') ?: Str::slug((string) env('APP_NAME', 'laravel')).'-session',
 
     /*
     |--------------------------------------------------------------------------

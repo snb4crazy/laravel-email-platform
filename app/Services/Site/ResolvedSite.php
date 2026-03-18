@@ -13,17 +13,20 @@ use App\Enums\SiteAuthMode;
  */
 final class ResolvedSite
 {
-    public const VIA_SITE_KEY     = 'site_key';
-    public const VIA_CREDENTIAL   = 'credential_key_id';
-    public const VIA_DOMAIN       = 'domain';
-    public const VIA_UNRESOLVED   = 'unresolved';
+    public const VIA_SITE_KEY = 'site_key';
+
+    public const VIA_CREDENTIAL = 'credential_key_id';
+
+    public const VIA_DOMAIN = 'domain';
+
+    public const VIA_UNRESOLVED = 'unresolved';
 
     public function __construct(
-        public readonly ?int           $siteId,
-        public readonly ?int           $tenantId,
-        public readonly SiteAuthMode   $authMode,
+        public readonly ?int $siteId,
+        public readonly ?int $tenantId,
+        public readonly SiteAuthMode $authMode,
         public readonly CaptchaProvider $captchaProvider,
-        public readonly string         $resolvedVia,
+        public readonly string $resolvedVia,
     ) {}
 
     public function isResolved(): bool
@@ -31,4 +34,3 @@ final class ResolvedSite
         return $this->resolvedVia !== self::VIA_UNRESOLVED;
     }
 }
-

@@ -15,9 +15,9 @@ class MailTemplateResolver
      *  2. Active DB global template (tenant_id = null) for event type
      *  3. Blade fallback: resources/views/mail/{event_type}.blade.php
      *
-     * @param  string    $eventType  One of MailTemplate::EVENT_* constants
-     * @param  array     $vars       Placeholder values for interpolation
-     * @param  int|null  $tenantId   Nullable until tenancy is implemented
+     * @param  string  $eventType  One of MailTemplate::EVENT_* constants
+     * @param  array  $vars  Placeholder values for interpolation
+     * @param  int|null  $tenantId  Nullable until tenancy is implemented
      */
     public function resolve(
         string $eventType,
@@ -63,7 +63,7 @@ class MailTemplateResolver
 
         // 3. Blade fallback — renders resources/views/mail/{event_type}.blade.php
         // Map event type constant to a blade view name.
-        $bladeView = 'mail.' . str_replace('_', '.', $eventType);
+        $bladeView = 'mail.'.str_replace('_', '.', $eventType);
 
         // Normalise to mail.contact if the specific view doesn't exist.
         if (! View::exists($bladeView)) {
@@ -82,4 +82,3 @@ class MailTemplateResolver
         );
     }
 }
-
