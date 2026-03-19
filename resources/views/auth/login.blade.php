@@ -1,45 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Email Platform</title>
-</head>
-<body>
-    <h1>Email Platform Login</h1>
+@extends('layouts.app')
 
-    @if ($errors->any())
-        <div style="color: #b00020;">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+@section('title', 'Login')
+
+@section('body')
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div class="w-full max-w-sm">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-semibold text-gray-900">Email Platform</h1>
+            <p class="text-sm text-gray-500 mt-1">Sign in to your account</p>
         </div>
-    @endif
 
-    <form method="POST" action="{{ route('login.store') }}">
-        @csrf
-        <label for="email">Email</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus>
+        @if ($errors->any())
+            <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
 
-        <br>
+        <form method="POST" action="{{ route('login.store') }}"
+              class="bg-white border border-gray-200 rounded-lg p-6 space-y-5 shadow-sm">
+            @csrf
 
-        <label for="password">Password</label>
-        <input id="password" type="password" name="password" required>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="email">Email</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
 
-        <br>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="password">Password</label>
+                <input id="password" type="password" name="password" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
 
-        <label>
-            <input type="checkbox" name="remember" value="1"> Remember me
-        </label>
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="remember" name="remember" value="1"
+                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="remember" class="text-sm text-gray-700">Remember me</label>
+            </div>
 
-        <br>
+            <button type="submit"
+                    class="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors">
+                Sign In
+            </button>
+        </form>
 
-        <button type="submit">Login</button>
-    </form>
-
-    <p>Public signup is disabled. Ask an administrator to create your account.</p>
-</body>
-</html>
-
+        <p class="mt-4 text-center text-xs text-gray-400">
+            Account provisioning is admin-only.
+        </p>
+    </div>
+</div>
+@endsection
