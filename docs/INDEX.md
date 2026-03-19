@@ -45,12 +45,16 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 - Best practices
 
 **...know what's coming next**
-→ Look at [ROADMAP.md](ROADMAP.md)
-- Feature roadmap
-- TODO items
-- Known issues
-- Performance optimizations planned
-- Success metrics
+→ Start with [ROADMAP.md](ROADMAP.md)
+- High-level phase plan
+- Priority rules and delivery order
+- Current baseline snapshot
+
+→ Then use [TODO_BACKLOG.md](TODO_BACKLOG.md)
+- Detailed epic checklists
+- Definition-of-done criteria
+- Cross-cutting security/DevOps/testing tasks
+- Fast resume plan for next development cycle
 
 **...integrate a webhook**
 → Read [webhook-signature-contract.md](webhook-signature-contract.md)
@@ -77,6 +81,7 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 | [TESTING.md](TESTING.md) | Testing strategies, how to write tests | QA, Developers |
 | [CICD.md](CICD.md) | GitHub Actions CI/CD workflows explained | DevOps, Developers |
 | [ROADMAP.md](ROADMAP.md) | Feature roadmap, TODO items, planning | Project Managers, Developers |
+| [TODO_BACKLOG.md](TODO_BACKLOG.md) | Detailed next-feature backlog and epic checklists | Project Managers, Developers, DevOps |
 
 ### Contract Documentation
 
@@ -146,28 +151,26 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 → [TESTING.md](TESTING.md) + [ROADMAP.md](ROADMAP.md)
 
 ### Deploying to Production
-→ [SETUP.md](SETUP.md#deployment-notes) + [ROADMAP.md](ROADMAP.md#deployment-todo)
+→ [SETUP.md](SETUP.md#deployment-notes) + [TODO_BACKLOG.md](TODO_BACKLOG.md#cross-cutting-todos)
 
 ## Current Project Status
 
 ✅ **Complete**
-- Core infrastructure implemented
-- All models, controllers, jobs, services defined
-- API routes registered
-- Documentation comprehensive
+- Core infrastructure implemented and documented
+- Admin + portal UI baseline available
+- Tests currently pass in repository state
 
-⚠️ **In Progress**
-- Test execution (routing issue in test environment)
-- Auth enforcement (TODO, not enforced yet)
-- Email delivery (code commented, ready to uncomment)
+⚠️ **In Progress / Draft Mode**
+- Auth/signature enforcement is scaffolded but not fully enforced
+- Delivery provider rollout is planned in phased mode
+- Attachment storage flow is planned (Azure-first)
 
-❌ **Not Started**
-- File attachment handling (stub)
-- Admin site management API
-- Analytics dashboard
-- Advanced features (A/B testing, templates versioning)
+❌ **Not Started (Major)**
+- Multi-provider delivery failover
+- Billing/quotas and advanced analytics
+- Compliance workflows (retention/export/delete)
 
-See [ROADMAP.md](ROADMAP.md) for detailed status.
+See [ROADMAP.md](ROADMAP.md) and [TODO_BACKLOG.md](TODO_BACKLOG.md) for detailed planning.
 
 ## Key Terms
 
@@ -199,7 +202,7 @@ See [ROADMAP.md](ROADMAP.md) for detailed status.
 
 ## Document Maintenance
 
-All documentation was generated on **March 17, 2026**.
+All documentation was last updated on **March 18, 2026**.
 
 **Keep documentation updated:**
 - Update docs when adding features
@@ -210,4 +213,3 @@ All documentation was generated on **March 17, 2026**.
 ---
 
 **Start here**: Pick your role above and follow the suggested reading order!
-
