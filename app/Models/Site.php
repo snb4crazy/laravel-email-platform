@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\CaptchaProvider;
 use App\Enums\SiteAuthMode;
+use Database\Factories\SiteFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,7 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Site extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<SiteFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
