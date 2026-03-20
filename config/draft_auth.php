@@ -4,6 +4,9 @@ return [
     // Switch for future enforcement rollout.
     'enforce' => env('DRAFT_AUTH_ENFORCE', false),
 
+    // Extra verbose app-level debug logging for request/job flow diagnostics.
+    'extended_debug' => env('EXTENDED_DEBUG', false),
+
     'contact' => [
         // TODO: require API key for /api/contact.
         'require_api_key' => env('DRAFT_CONTACT_REQUIRE_API_KEY', false),
