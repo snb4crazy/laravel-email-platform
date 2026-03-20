@@ -263,6 +263,84 @@ QUEUE_CONNECTION=database
 php artisan queue:work database
 ```
 
+### Queue Worker CLI Commands (Quick Reference)
+
+Run one worker in foreground (useful for debug):
+
+```bash
+php artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 -v
+```
+
+Use the configured default connection automatically (recommended when switching
+between `redis` / `database` via `.env`):
+
+```bash
+php artisan queue:work --queue=default --sleep=3 --tries=3 --timeout=120 -v
+```
+
+Explicit Redis worker example:
+
+```bash
+php artisan queue:work redis --queue=default --sleep=3 --tries=3 --timeout=120 -v
+```
+
+Process only one job and exit:
+
+```bash
+php artisan queue:work database --once
+```
+
+Restart workers after deploy/config changes:
+
+```bash
+php artisan queue:restart
+```
+
+### Supervisor Setup (Production)
+
+Install Supervisor (Ubuntu/Debian example):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y supervisor
+sudo systemctl enable supervisor
+sudo systemctl start supervisor
+```
+
+Create worker config at `/etc/supervisor/conf.d/email-platform-worker.conf`:
+
+```ini
+[program:email-platform-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/email_platform/artisan queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/email_platform/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Apply config and start workers:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start email-platform-worker:*
+sudo supervisorctl status
+```
+
+Useful operations:
+
+```bash
+sudo supervisorctl restart email-platform-worker:*
+sudo supervisorctl stop email-platform-worker:*
+sudo supervisorctl tail -f email-platform-worker:email-platform-worker_00
+```
+
 ## Caching Configuration
 
 ### Development
@@ -516,6 +594,41 @@ curl http://localhost:8000/api/health
 # Response: { "status": "ok" }
 ```
 
+### Contact API Smoke Test (Generic cURL)
+
+Use plain ASCII quotes in JSON. Replace placeholder values:
+
+```bash
+curl -i -X POST "https://YOUR_API_BASE_URL/api/contact" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "site_key": "YOUR_PLATFORM_SITE_KEY",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "subject": "Contact form test",
+    "message": "Hello from cURL",
+    "captcha_token": "ONE_TIME_CAPTCHA_TOKEN_IF_REQUIRED",
+    "request_id": "req-demo-001",
+    "meta": {
+      "source": "curl",
+      "environment": "local"
+    }
+  }'
+```
+
+Expected success response:
+
+```json
+{
+  "message": "Contact request received."
+}
+```
+
+Notes:
+- If `DRAFT_AUTH_ENFORCE=false`, `captcha_token` can be omitted.
+- If site auth mode is `captcha`, `captcha_token` must be a real browser-generated token.
+- If response is HTML redirect, payload JSON is likely malformed (smart quotes are a common cause).
+
 ## Troubleshooting
 
 ### Storage Permissions
@@ -614,5 +727,5 @@ POST /admin/users
 
 ---
 
-Last updated: March 18, 2026
+Last updated: March 19, 2026
 
