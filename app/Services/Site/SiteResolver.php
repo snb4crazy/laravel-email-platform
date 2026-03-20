@@ -151,11 +151,27 @@ class SiteResolver
 
     private function log(Request $request, ResolvedSite $resolved): void
     {
+        $contentType = (string) $request->header('Content-Type', '');
+        $rawBody = (string) $request->getContent();
+        $jsonError = null;
+
+        if (str_contains(strtolower($contentType), 'application/json') && $rawBody !== '') {
+            json_decode($rawBody, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $jsonError = json_last_error_msg();
+            }
+        }
+
         Log::debug('SiteResolver result', [
             'resolved_via' => $resolved->resolvedVia,
             'site_id' => $resolved->siteId,
             'tenant_id' => $resolved->tenantId,
             'auth_mode' => $resolved->authMode->value,
+            'content_type' => $contentType,
+            'input_keys' => array_keys($request->all()),
+            'site_key_input' => $request->input(config('multisite.fields.site_key', 'site_key')),
+            'x_key_id' => $request->header('X-Key-Id'),
+            'json_error' => $jsonError,
             'ip' => $request->ip(),
             'path' => $request->path(),
         ]);
