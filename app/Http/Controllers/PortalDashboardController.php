@@ -24,6 +24,7 @@ class PortalDashboardController extends Controller
             ->get();
         $recentSites = Site::query()
             ->where('tenant_id', $user->id)
+            ->withCount('credentials')
             ->latest()
             ->limit(5)
             ->get();

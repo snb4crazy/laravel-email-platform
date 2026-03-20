@@ -17,6 +17,7 @@ class SiteController extends Controller
     {
         $sites = Site::query()
             ->where('tenant_id', Auth::id())
+            ->withCount('credentials')
             ->latest()
             ->paginate(15);
 
