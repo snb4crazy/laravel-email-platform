@@ -13,6 +13,45 @@ When enforcement is enabled, use one of:
 - **Bearer Token**: `Authorization: Bearer your_token_here`
 - **HMAC Signature**: See `docs/webhook-signature-contract.md`
 
+If you want to prepare webhook integration now but defer enforcement,
+follow [WEBHOOK_PREP.md](WEBHOOK_PREP.md) first.
+
+## Portal API Integration Page (Per Site)
+
+For each site, the portal now includes a ready-to-copy integration page:
+
+- Open `Portal -> My Sites -> {Site} -> API Integration`
+- Route: `/sites/{site}/integration`
+- It shows site-specific values and request examples for:
+  - `POST /api/contact`
+  - `POST /api/webhook/contact-form`
+
+### How to set these values in UI
+
+1. Create or open a site in `My Sites`.
+2. Set `Auth Mode` on the site:
+   - `none` for quick testing
+   - `captcha` for browser form protection
+   - `api_key` for API key protected contact endpoint
+3. Save the site and copy its `public_key` (this is your `site_key` in requests).
+4. Go to `Site -> Credentials` and create credentials:
+   - `api_key` type for `X-Api-Key`
+   - `hmac` type for webhook `X-Key-Id` + signature flow
+   - `captcha_secret` type for captcha verification secret
+
+Example values:
+
+```text
+APP_URL=https://api.example.com
+site_key=PK_ABC123...
+X-Api-Key=<generated-api-key-secret>
+X-Key-Id=<generated-hmac-key-id>
+captcha_token=<provider-token-from-frontend>
+```
+
+> Security note: only `site_key` and `key_id` are safe to expose client-side.
+> Keep secrets in site credentials and never hardcode them into frontend bundles.
+
 ## Endpoints
 
 ### 1. Health Check
@@ -270,7 +309,7 @@ Server error occurred.
 ```json
 {
   "message": "Server error",
-  "error": "Error details"  // Only in development
+  "error": "Error details"
 }
 ```
 
