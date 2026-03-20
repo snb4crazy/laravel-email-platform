@@ -25,6 +25,7 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 **...integrate with the API**
 → Check [API.md](API.md)
 - All endpoints with examples
+- Portal per-site integration page (`/sites/{site}/integration`)
 - Request/response formats
 - Error codes
 - Code examples (cURL, JavaScript, Python)
@@ -62,6 +63,11 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 - Header requirements
 - Examples in multiple languages
 
+→ Start with [WEBHOOK_PREP.md](WEBHOOK_PREP.md) for minimal pre-setup without enforcement
+- What to configure now
+- What to defer
+- Go-live checklist
+
 **...understand request validation**
 → See [request-contracts-draft.md](request-contracts-draft.md)
 - All fields and their validation rules
@@ -82,6 +88,7 @@ Welcome to the Email Platform documentation! This guide will help you find what 
 | [CICD.md](CICD.md) | GitHub Actions CI/CD workflows explained | DevOps, Developers |
 | [ROADMAP.md](ROADMAP.md) | Feature roadmap, TODO items, planning | Project Managers, Developers |
 | [TODO_BACKLOG.md](TODO_BACKLOG.md) | Detailed next-feature backlog and epic checklists | Project Managers, Developers, DevOps |
+| [WEBHOOK_PREP.md](WEBHOOK_PREP.md) | Minimal webhook preparation before enforcement | Developers, Integration Partners |
 
 ### Contract Documentation
 
