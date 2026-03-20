@@ -6,6 +6,14 @@
 <div class="mb-4 flex items-center justify-between">
     <a href="{{ route('sites.index') }}" class="text-sm text-indigo-600 hover:underline">&larr; My Sites</a>
     <div class="flex gap-3">
+        <a href="{{ route('sites.credentials.index', $site) }}"
+           class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-sm rounded-md hover:bg-gray-50">
+            Manage Credentials
+        </a>
+        <a href="{{ route('sites.integration', $site) }}"
+           class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700">
+            API Integration
+        </a>
         <a href="{{ route('sites.edit', $site) }}"
            class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-sm rounded-md hover:bg-gray-50">
             Edit
@@ -20,6 +28,7 @@
         <div><span class="text-gray-500 w-36 inline-block">Notification Email</span>{{ $site->notification_email ?? '—' }}</div>
         <div><span class="text-gray-500 w-36 inline-block">Auth Mode</span>{{ $site->auth_mode?->value ?? '—' }}</div>
         <div><span class="text-gray-500 w-36 inline-block">Captcha</span>{{ $site->captcha_provider?->value ?? '—' }}</div>
+        <div><span class="text-gray-500 w-36 inline-block">Public Site Key</span><span class="font-mono text-xs">{{ $site->public_key }}</span></div>
         <div><span class="text-gray-500 w-36 inline-block">Status</span>
             @if ($site->is_active)
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Active</span>
@@ -28,6 +37,10 @@
             @endif
         </div>
         <div><span class="text-gray-500 w-36 inline-block">Created</span>{{ $site->created_at->format('Y-m-d H:i') }}</div>
+        <div class="pt-2 text-xs text-gray-500">
+            For <code>captcha</code> mode, add a credential with type <code>captcha_secret</code>.<br>
+            For <code>api_key</code> mode, add a credential with type <code>api_key</code>.
+        </div>
     </div>
 
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
