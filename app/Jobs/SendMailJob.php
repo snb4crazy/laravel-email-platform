@@ -37,6 +37,13 @@ class SendMailJob implements ShouldQueue
 
     public function handle(MailTemplateResolver $resolver): void
     {
+        $this->debug('SendMailJob started', [
+            'type' => $this->type,
+            'tenant_id' => $this->tenantId,
+            'site_id' => $this->siteId,
+            //'submitter_email' => $this->email,
+        ]);
+
         // Resolve delivery address.
         // When the submission belongs to a registered site that has a
         // notification_email configured, ALL messages are delivered there
@@ -59,6 +66,12 @@ class SendMailJob implements ShouldQueue
                 $replyTo = $this->email;
             }
         }
+
+        $this->debug('SendMailJob resolved delivery target', [
+            //'delivery_email' => $deliveryEmail,
+            'delivery_name' => $deliveryName,
+            'has_reply_to' => $replyTo !== null,
+        ]);
 
         // 1. Persist the message record
         $mailMessage = MailMessage::create([
@@ -84,10 +97,19 @@ class SendMailJob implements ShouldQueue
 
         $mailMessage->recordEvent(MailMessageEvent::TYPE_QUEUED);
 
+        $this->debug('SendMailJob message persisted', [
+            'mail_message_id' => $mailMessage->id,
+            'status' => MailMessage::STATUS_QUEUED,
+        ]);
+
         // 2. Attempt sending
         try {
             $mailMessage->update(['status' => MailMessage::STATUS_SENDING]);
             $mailMessage->recordEvent(MailMessageEvent::TYPE_SENDING);
+
+            $this->debug('SendMailJob status changed to sending', [
+                'mail_message_id' => $mailMessage->id,
+            ]);
 
             // Map job type to template event type constant
             $eventType = $this->type === self::TYPE_WEBHOOK
@@ -120,12 +142,23 @@ class SendMailJob implements ShouldQueue
                 'submitter' => $this->email,
             ]);
 
+            $this->debug('SendMailJob template resolution details', [
+                'mail_message_id' => $mailMessage->id,
+                'event_type' => $eventType,
+                'template_source' => $resolved->resolvedVia,
+            ]);
+
             // TODO: uncomment once MAIL_MAILER is configured for real delivery
-            // Mail::to($deliveryEmail, $deliveryName)->send(new ContactMail($resolved));
+            Mail::to($deliveryEmail, $deliveryName)->send(new ContactMail($resolved));
 
             // 3. Mark as sent
             $mailMessage->update(['status' => MailMessage::STATUS_SENT]);
             $mailMessage->recordEvent(MailMessageEvent::TYPE_SENT);
+
+            $this->debug('SendMailJob completed successfully', [
+                'mail_message_id' => $mailMessage->id,
+                'status' => MailMessage::STATUS_SENT,
+            ]);
 
         } catch (Throwable $e) {
             // 4. Record failure
@@ -135,7 +168,27 @@ class SendMailJob implements ShouldQueue
                 'exception' => get_class($e),
             ]);
 
+            Log::error('SendMailJob failed', [
+                'mail_message_id' => $mailMessage->id,
+                'type' => $this->type,
+                'tenant_id' => $this->tenantId,
+                'site_id' => $this->siteId,
+                //'delivery_to' => $deliveryEmail,
+                //'submitter' => $this->email,
+                'exception' => get_class($e),
+                'error' => $e->getMessage(),
+            ]);
+
             throw $e;
         }
+    }
+
+    private function debug(string $message, array $context = []): void
+    {
+        if (! config('draft_auth.extended_debug', false)) {
+            return;
+        }
+
+        Log::debug($message, $context);
     }
 }
