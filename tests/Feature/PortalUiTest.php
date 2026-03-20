@@ -50,8 +50,13 @@ class PortalUiTest extends TestCase
     public function test_user_can_view_their_sites(): void
     {
         $user = User::factory()->create(['role' => User::ROLE_USER]);
+        $site = Site::factory()->for($user, 'tenant')->create();
 
-        $this->actingAs($user)->get('/sites')->assertOk();
+        $this->actingAs($user)
+            ->get('/sites')
+            ->assertOk()
+            ->assertSee('Add credential')
+            ->assertSee('configured');
     }
 
     public function test_user_can_access_site_create_form(): void
@@ -89,7 +94,32 @@ class PortalUiTest extends TestCase
         $this->actingAs($user)
             ->get("/sites/{$site->id}")
             ->assertOk()
-            ->assertViewIs('portal.sites.show');
+            ->assertViewIs('portal.sites.show')
+            ->assertSee('Manage Credentials');
+    }
+
+    public function test_user_can_view_site_api_integration_page(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_USER]);
+        $site = Site::factory()->for($user, 'tenant')->create();
+
+        $this->actingAs($user)
+            ->get("/sites/{$site->id}/integration")
+            ->assertOk()
+            ->assertSee('POST /api/contact')
+            ->assertSee($site->public_key);
+    }
+
+    public function test_portal_dashboard_surfaces_site_credential_link(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_USER]);
+        $site = Site::factory()->for($user, 'tenant')->create();
+
+        $this->actingAs($user)
+            ->get('/portal')
+            ->assertOk()
+            ->assertSee('Manage credentials')
+            ->assertSee(route('sites.credentials.index', $site), false);
     }
 
     public function test_user_cannot_view_another_users_site(): void
@@ -100,6 +130,17 @@ class PortalUiTest extends TestCase
 
         $this->actingAs($other)
             ->get("/sites/{$site->id}")
+            ->assertForbidden();
+    }
+
+    public function test_user_cannot_view_another_users_site_integration_page(): void
+    {
+        $owner = User::factory()->create(['role' => User::ROLE_USER]);
+        $other = User::factory()->create(['role' => User::ROLE_USER]);
+        $site = Site::factory()->for($owner, 'tenant')->create();
+
+        $this->actingAs($other)
+            ->get("/sites/{$site->id}/integration")
             ->assertForbidden();
     }
 
