@@ -17,6 +17,7 @@ class SiteCredential extends Model
         'credential_type',
         'key_id',
         'secret_hash',
+        'secret_encrypted',
         'is_active',
         'last_used_at',
         'expires_at',
@@ -25,6 +26,7 @@ class SiteCredential extends Model
 
     protected $casts = [
         'credential_type' => CredentialType::class,
+        'secret_encrypted' => 'encrypted',
         'is_active' => 'boolean',
         'last_used_at' => 'datetime',
         'expires_at' => 'datetime',

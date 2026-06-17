@@ -27,6 +27,7 @@
                         <th class="px-5 py-3">Name</th>
                         <th class="px-5 py-3">Domain</th>
                         <th class="px-5 py-3">Auth</th>
+                        <th class="px-5 py-3">Credentials</th>
                         <th class="px-5 py-3">Status</th>
                         <th class="px-5 py-3">Created</th>
                         <th class="px-5 py-3"></th>
@@ -40,6 +41,11 @@
                             </td>
                             <td class="px-5 py-3 text-gray-600">{{ $site->domain }}</td>
                             <td class="px-5 py-3 text-gray-500">{{ $site->auth_mode?->value ?? '—' }}</td>
+                            <td class="px-5 py-3 text-gray-500">
+                                <a href="{{ route('sites.credentials.index', $site) }}" class="text-indigo-600 hover:underline">
+                                    {{ $site->credentials_count }} configured
+                                </a>
+                            </td>
                             <td class="px-5 py-3">
                                 @if ($site->is_active)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">Active</span>
@@ -49,6 +55,7 @@
                             </td>
                             <td class="px-5 py-3 text-gray-400">{{ $site->created_at->format('Y-m-d') }}</td>
                             <td class="px-5 py-3 flex items-center gap-3">
+                                <a href="{{ route('sites.credentials.create', $site) }}" class="text-indigo-600 hover:underline text-xs">Add credential</a>
                                 <a href="{{ route('sites.edit', $site) }}" class="text-indigo-600 hover:underline text-xs">Edit</a>
                                 <form method="POST" action="{{ route('sites.destroy', $site) }}"
                                       onsubmit="return confirm('Delete this site?')"

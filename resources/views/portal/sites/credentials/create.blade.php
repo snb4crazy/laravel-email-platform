@@ -35,6 +35,15 @@
                     </option>
                 @endforeach
             </select>
+            <p class="mt-1 text-xs text-gray-400">Use <code>api_key</code> for contact API auth and <code>captcha_secret</code> for captcha validation.</p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="secret">Secret (optional)</label>
+            <input id="secret" name="secret" type="text" value="{{ old('secret') }}"
+                   placeholder="Leave blank to auto-generate"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <p class="mt-1 text-xs text-gray-400">Provide your provider secret manually (recommended for captcha).</p>
         </div>
 
         <div>

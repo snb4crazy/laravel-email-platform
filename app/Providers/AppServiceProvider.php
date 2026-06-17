@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Mail\MailTemplateResolver;
+use App\Services\Security\CaptchaVerificationService;
 use App\Services\Site\SiteResolver;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MailTemplateResolver::class);
         $this->app->singleton(SiteResolver::class);
+        $this->app->singleton(CaptchaVerificationService::class);
     }
 
     /**

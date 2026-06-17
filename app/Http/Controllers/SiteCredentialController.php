@@ -38,19 +38,29 @@ class SiteCredentialController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'credential_type' => ['required', 'string'],
+            'secret' => ['nullable', 'string', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
             'expires_at' => ['nullable', 'date'],
         ]);
 
-        // Generate key_id and a random secret (shown once)
+        $credentialType = CredentialType::from($validated['credential_type']);
+
+        // Generate key_id and secret (shown once). If user provides a custom
+        // secret, we store it encrypted so captcha/HMAC flows can read it later.
         $keyId = Str::upper(Str::random(12));
-        $secret = Str::random(40);
+        $secret = $validated['secret'] ?? Str::random(40);
+
+        $secretHash = null;
+        if ($credentialType === CredentialType::API_KEY) {
+            $secretHash = bcrypt($secret);
+        }
 
         $site->credentials()->create([
             'name' => $validated['name'],
-            'credential_type' => $validated['credential_type'],
+            'credential_type' => $credentialType,
             'key_id' => $keyId,
-            'secret_hash' => bcrypt($secret),
+            'secret_hash' => $secretHash,
+            'secret_encrypted' => $secret,
             'is_active' => ! empty($validated['is_active']),
             'expires_at' => $validated['expires_at'] ?? null,
         ]);

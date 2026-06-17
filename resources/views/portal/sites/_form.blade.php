@@ -50,13 +50,7 @@
     <input id="captcha_site_key" name="captcha_site_key" type="text"
            value="{{ old('captcha_site_key', $site->captcha_site_key ?? '') }}"
            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-1" for="captcha_secret">Captcha Secret</label>
-    <input id="captcha_secret" name="captcha_secret" type="password"
-           value="{{ old('captcha_secret', $site->captcha_secret ?? '') }}"
-           class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <p class="mt-1 text-xs text-gray-400">Store captcha secret under Site Credentials as type <code>captcha_secret</code>.</p>
 </div>
 
 <div class="flex items-center gap-2">

@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PortalDashboardController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\SiteCredentialController;
+use App\Http\Controllers\SiteIntegrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,6 +35,7 @@ Route::middleware('auth')->group(function (): void {
     Route::resource('sites', SiteController::class);
 
     Route::prefix('sites/{site}')->name('sites.')->group(function (): void {
+        Route::get('/integration', [SiteIntegrationController::class, 'show'])->name('integration');
         Route::get('/credentials', [SiteCredentialController::class, 'index'])->name('credentials.index');
         Route::get('/credentials/create', [SiteCredentialController::class, 'create'])->name('credentials.create');
         Route::post('/credentials', [SiteCredentialController::class, 'store'])->name('credentials.store');
