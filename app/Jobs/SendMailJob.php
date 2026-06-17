@@ -41,7 +41,7 @@ class SendMailJob implements ShouldQueue
             'type' => $this->type,
             'tenant_id' => $this->tenantId,
             'site_id' => $this->siteId,
-            //'submitter_email' => $this->email,
+            // 'submitter_email' => $this->email,
         ]);
 
         // Resolve delivery address.
@@ -68,7 +68,7 @@ class SendMailJob implements ShouldQueue
         }
 
         $this->debug('SendMailJob resolved delivery target', [
-            //'delivery_email' => $deliveryEmail,
+            // 'delivery_email' => $deliveryEmail,
             'delivery_name' => $deliveryName,
             'has_reply_to' => $replyTo !== null,
         ]);
@@ -173,8 +173,8 @@ class SendMailJob implements ShouldQueue
                 'type' => $this->type,
                 'tenant_id' => $this->tenantId,
                 'site_id' => $this->siteId,
-                //'delivery_to' => $deliveryEmail,
-                //'submitter' => $this->email,
+                // 'delivery_to' => $deliveryEmail,
+                // 'submitter' => $this->email,
                 'exception' => get_class($e),
                 'error' => $e->getMessage(),
             ]);
